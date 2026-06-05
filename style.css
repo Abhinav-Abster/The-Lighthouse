@@ -653,8 +653,41 @@ body.light-theme .nav-cta:hover {
   padding: 18px;
   border-radius: 12px;
   border: 1px solid var(--color-border);
+  position: relative;
+  transition: border-color 0.3s ease, transform 0.3s ease; 
+}
+.food-card::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 14px; 
+  background: linear-gradient(135deg, #c9a227, #ffe082, #a67c00, #ffd54f, #c9a227);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 0;
+  pointer-events: none;
 }
 
+.food-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  background-color: var(--color-bg-card); 
+  z-index: 1;
+  pointer-events: none;
+}
+
+.food-card:hover::before {
+  opacity: 1;
+}
+.food-card:hover {
+  transform: scale(1.02);
+}
+.food-card > * {
+  position: relative;
+  z-index: 2;
+}
 .food-image {
   width: 220px;
   height: 160px;
