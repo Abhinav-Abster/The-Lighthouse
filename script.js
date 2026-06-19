@@ -3,12 +3,11 @@ const nav = document.getElementById("nav");
 const navToggle = document.getElementById("navToggle");
 const navMenu = document.getElementById("navMenu");
 const navLinks = document.querySelectorAll(".nav-link");
-const menuTabs = document.querySelectorAll(".menu-tab");
-const menuPanels = document.querySelectorAll(".menu-panel");
+// Menu tabs/panels removed — menu uses filter buttons and data-category items
 const heroBg = document.getElementById("heroBg");
 const reservationBg = document.getElementById("reservationBg");
 const reservationForm = document.getElementById("reservationForm");
-const dateInput = document.getElementById("date");
+const dateInput = document.getElementById("reservation-date");
 const timeSelect = document.getElementById("time");
 const themeToggle = document.getElementById("themeToggle");
 if (dateInput) {
@@ -128,24 +127,7 @@ function closeMobileMenu() {
   document.body.style.overflow = "";
 }
 
-// Menu tabs functionality
-function switchMenuTab(e) {
-  const targetTab = e.target.dataset.tab;
-
-  // Update tab buttons
-  menuTabs.forEach((tab) => {
-    tab.classList.remove("active");
-  });
-  e.target.classList.add("active");
-
-  // Update panels
-  menuPanels.forEach((panel) => {
-    panel.classList.remove("active");
-    if (panel.id === targetTab) {
-      panel.classList.add("active");
-    }
-  });
-}
+// Menu tabs functionality removed — menu uses filter buttons and data-category items
 
 //
 // Theme Toggle
@@ -332,7 +314,7 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-/// Scroll to Discover - Auto slow scroll
+// Scroll to Discover - Auto slow scroll
 const heroScroll = document.querySelector(".hero-scroll");
 let autoScrollInterval = null;
 
@@ -385,9 +367,7 @@ document.querySelectorAll(".nav-cta, .hero-buttons a").forEach((link) => {
   link.addEventListener("click", smoothScroll);
 });
 
-menuTabs.forEach((tab) => {
-  tab.addEventListener("click", switchMenuTab);
-});
+// Menu tab listeners removed — menu uses filter buttons
 
 if (reservationForm) {
   reservationForm.addEventListener("submit", handleFormSubmit);
@@ -608,18 +588,9 @@ if (reviewForm) {
 
 // Init
 renderReviews();
-//BackToTop
+// BackToTop
 const backToTopBtn = document.getElementById("backToTop");
 
-window.addEventListener("scroll", () => {
-  if (window.scrollY > 200) {
-    backToTopBtn.style.display = "block";
-  } else {
-    backToTopBtn.style.display = "none";
-  }
-});
-
-// Show/hide on scroll
 window.addEventListener("scroll", () => {
   if (window.scrollY > 300) {
     backToTopBtn.classList.add("visible");
