@@ -8,7 +8,7 @@ const menuPanels = document.querySelectorAll(".menu-panel");
 const heroBg = document.getElementById("heroBg");
 const reservationBg = document.getElementById("reservationBg");
 const reservationForm = document.getElementById("reservationForm");
-const dateInput = document.getElementById("date");
+const dateInput = document.getElementById("reservation-date");
 const timeSelect = document.getElementById("time");
 const themeToggle = document.getElementById("themeToggle");
 if (dateInput) {
