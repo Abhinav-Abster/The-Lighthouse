@@ -364,7 +364,7 @@ body.light-theme .reservation-overlay {
 
 .hero-content {
   text-align: center;
-  padding: 0 24px;
+  padding: 0 24px 50px 24px;
   color: #f5f2ed; /* Enforce light text over the dark background overlay across all themes */
 }
 
@@ -434,7 +434,7 @@ body.light-theme .btn-outline:hover {
 }
 .hero-scroll {
   position: absolute;
-  bottom: 11px;
+  bottom: 10px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
