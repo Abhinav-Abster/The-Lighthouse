@@ -1978,3 +1978,14 @@ body.light-theme .skeleton-block {
   background-color: var(--bg-color);
   color: goldenrod;
 }
+/* Menu Category Count */
+.category-count {
+  text-align: center;
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+
+.category-count span {
+  font-weight: 700;
+  color: #e67e22;
+}

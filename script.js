@@ -1,28 +1,7 @@
-// DOM Elements
-const nav = document.getElementById("nav");
-const cuisineDropdown = document.getElementById("cuisine-filter");
-const menuSearch = document.getElementById("menu-search");
-const navToggle = document.getElementById("navToggle");
-const navMenu = document.getElementById("navMenu");
-const navLinks = document.querySelectorAll(".nav-link");
-// Menu tabs/panels removed — menu uses filter buttons and data-category items
-const heroBg = document.getElementById("heroBg");
-const reservationBg = document.getElementById("reservationBg");
-const reservationForm = document.getElementById("reservationForm");
-const dateInput = document.getElementById("reservation-date");
-const timeSelect = document.getElementById("time");
-const themeToggle = document.getElementById("themeToggle");
-const filterBtns = document.querySelectorAll(".filter-btn");
-const menuContent = document.querySelector(".menu-content");
-if (dateInput) {
-  const tomorrow = new Date(Date.now() + 86400000);
-  const maxDate  = new Date(Date.now() + 90 * 86400000);
-
-  dateInput.setAttribute("min", tomorrow.toISOString().split("T")[0]);
-  dateInput.setAttribute("max", maxDate.toISOString().split("T")[0]);
-// ── Device detection (used by FIX #9 and FIX #14) ───
+// ── Device detection ───
 const isTouchDevice = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
-//DOM ELEMENT
+
+// ── DOM Elements ───
 const nav            = document.getElementById('nav');
 const navToggle      = document.getElementById('navToggle');
 const navMenu        = document.getElementById('navMenu');
@@ -30,11 +9,15 @@ const navLinks       = document.querySelectorAll('.nav-link');
 const heroBg         = document.getElementById('heroBg');
 const reservationBg  = document.getElementById('reservationBg');
 const reservationForm= document.getElementById('reservationForm');
-const dateInput      = document.getElementById('date');
+const dateInput      = document.getElementById('reservation-date');
 const timeSelect     = document.getElementById('time');
 const themeToggle    = document.getElementById('themeToggle');
+const cuisineDropdown = document.getElementById("cuisine-filter");
+const menuSearch = document.getElementById("menu-search");
+const filterBtns = document.querySelectorAll(".filter-btn");
+const menuContent = document.querySelector(".menu-content");
 
-// ── FIX #9 — show correct scroll hint based on input type ────────
+// ── Scroll hint ───
 const scrollHintMouse = document.querySelector('.scroll-hint-mouse');
 const scrollHintTouch = document.querySelector('.scroll-hint-touch');
 
@@ -43,7 +26,7 @@ if (scrollHintMouse && scrollHintTouch) {
   scrollHintTouch.style.display = isTouchDevice ? '' : 'none';
 }
 
-// ── FIX #13 — Date validation: min = tomorrow, max = 90 days out ─────
+// ── Date validation ───
 if (dateInput) {
   const tomorrow = new Date(Date.now() + 86400000);
   const maxDate  = new Date(Date.now() + 90 * 86400000);
@@ -54,8 +37,7 @@ if (dateInput) {
   dateInput.addEventListener('change', updateAvailableTimes);
 }
 
-// ── FIX #11 — Disable past time slots when today is selected.
-// Original had no handler for this — users could pick 7AM at 10PM.
+// ── Disable past time slots ───
 function updateAvailableTimes() {
   if (!dateInput || !timeSelect) return;
 
@@ -71,7 +53,6 @@ function updateAvailableTimes() {
     const [optHours, optMins] = option.value.split(':').map(Number);
 
     if (selectedDate === todayStr) {
-      // Disable times already passed (30-min buffer for travel/prep)
       const isPast =
         optHours < currentHours ||
         (optHours === currentHours && optMins <= currentMins + 30);
@@ -86,18 +67,12 @@ function updateAvailableTimes() {
   });
 }
 
-
-
 // ── Navigation scroll effect ──
 function handleScroll() {
   const currentScroll = window.scrollY;
 
-  // Sticky nav background
   nav.classList.toggle('scrolled', currentScroll > 50);
 
-  // FIX #14 — Parallax completely skipped on touch/iOS
-  // background-attachment:fixed doesn't work on iOS Safari and the JS
-  // translateY parallax causes severe jank on touch devices.
   if (!isTouchDevice) {
     if (heroBg) {
       heroBg.style.transform = `translateY(${currentScroll * 0.5}px)`;
@@ -146,27 +121,7 @@ function closeMobileMenu() {
   document.body.style.overflow = '';
 }
 
-// Menu tabs functionality
-function switchMenuTab(e) {
-  const targetTab = e.target.dataset.tab;
-
-  // Update tab buttons
-  menuTabs.forEach((tab) => {
-    tab.classList.remove("active");
-  });
-  e.target.classList.add("active");
-
-  // Update panels
-  menuPanels.forEach((panel) => {
-    panel.classList.remove("active");
-    if (panel.id === targetTab) {
-      panel.classList.add("active");
-    }
-  });
-}
-
-//
-// Theme Toggle
+// ── Theme Toggle ───
 const savedTheme = localStorage.getItem("theme");
 
 if (savedTheme === "light") {
@@ -190,21 +145,17 @@ themeToggle.addEventListener("click", () => {
   }
 });
 
-// ── Menu Search and Filter ─────────────────────────
-
-
-
+// ── Menu Search and Filter ───
 function filterMenuItems(timeFilter, cuisineFilter, searchText) {
   const menuItems = document.querySelectorAll(".menu-item");
   let visibleCount = 0;
 
   menuItems.forEach((item) => {
-    // Check if the item has an H3 before trying to read it
     const titleElement = item.querySelector("h3");
-    if (!titleElement) return; // Skip this loop iteration if structure is invalid
+    if (!titleElement) return;
 
     const itemName = titleElement.textContent.toLowerCase();
-    const timeCategory = item.dataset.category || "all"; 
+    const timeCategory = item.dataset.category || "all";
     const cuisineCategory = item.dataset.cuisine || "all";
 
     const matchesSearch = itemName.includes(searchText.toLowerCase());
@@ -219,7 +170,6 @@ function filterMenuItems(timeFilter, cuisineFilter, searchText) {
     }
   });
 
-  // Handle "No Results" display
   let noResults = document.querySelector(".no-results");
   if (visibleCount === 0) {
     if (!noResults) {
@@ -232,14 +182,16 @@ function filterMenuItems(timeFilter, cuisineFilter, searchText) {
     noResults.remove();
   }
 }
+
 function triggerFilter() {
   const activeBtn = document.querySelector(".filter-btn.active");
   const timeFilter = activeBtn ? activeBtn.dataset.filter : "all";
   const cuisineFilter = cuisineDropdown ? cuisineDropdown.value : "all";
   const searchText = menuSearch ? menuSearch.value : "";
-  
+
   filterMenuItems(timeFilter, cuisineFilter, searchText);
 }
+
 if (cuisineDropdown) {
   cuisineDropdown.addEventListener("change", triggerFilter);
 }
@@ -247,28 +199,16 @@ if (cuisineDropdown) {
 if (menuSearch) {
   menuSearch.addEventListener("input", triggerFilter);
 }
-// Filter buttons
+
 filterBtns.forEach((btn) => {
   btn.addEventListener("click", () => {
     filterBtns.forEach((b) => b.classList.remove("active"));
-
     btn.classList.add("active");
     triggerFilter();
-
-    
   });
 });
 
-if (menuSearch) {
-  menuSearch.addEventListener('input', () => {
-    const activeFilter = document.querySelector('.filter-btn.active').dataset.filter;
-    filterMenuItems(activeFilter, menuSearch.value);
-  });
-}
-
- 
-
-// Smooth scroll for navigation links
+// ── Smooth scroll ───
 function smoothScroll(e) {
   e.preventDefault();
   const targetId      = this.getAttribute('href');
@@ -280,12 +220,11 @@ function smoothScroll(e) {
     window.scrollTo({
       top: offsetTop,
       behavior: prefersReduced ? "auto" : "smooth",
-    // FIX #15 partial — respect reduced motion in smooth scroll too
-   
-  })
-  closeMobileMenu();
+    });
+    closeMobileMenu();
+  }
 }
-}
+
 // ── Reservation form submission ──
 function handleFormSubmit(e) {
   e.preventDefault();
@@ -301,46 +240,42 @@ function handleFormSubmit(e) {
       input.style.borderColor = '';
     }
   });
+
   const emailInput = document.getElementById('email');
-const phoneInput = document.getElementById('phone');
+  const phoneInput = document.getElementById('phone');
 
-// Remove old error messages if already present
-document.querySelectorAll('.error-message').forEach(el => el.remove());
+  document.querySelectorAll('.error-message').forEach(el => el.remove());
 
-// Email validation
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-if (emailInput && !emailRegex.test(emailInput.value.trim())) {
-  emailInput.style.borderColor = '#c94a4a';
+  if (emailInput && !emailRegex.test(emailInput.value.trim())) {
+    emailInput.style.borderColor = '#c94a4a';
 
-  const emailError = document.createElement('small');
-  emailError.className = 'error-message';
-  emailError.style.color = '#c94a4a';
-  emailError.textContent = 'Please enter a valid email address.';
+    const emailError = document.createElement('small');
+    emailError.className = 'error-message';
+    emailError.style.color = '#c94a4a';
+    emailError.textContent = 'Please enter a valid email address.';
 
-  emailInput.parentElement.appendChild(emailError);
-
-  isValid = false;
-}
-
-// Phone validation
-if (phoneInput) {
-  const phoneValue = phoneInput.value.replace(/\D/g, '');
-
-  if (phoneValue.length !== 10) {
-    phoneInput.style.borderColor = '#c94a4a';
-
-    const phoneError = document.createElement('small');
-    phoneError.className = 'error-message';
-    phoneError.style.color = '#c94a4a';
-    phoneError.textContent = 'Phone number must contain exactly 10 digits.';
-
-    phoneInput.parentElement.appendChild(phoneError);
-
+    emailInput.parentElement.appendChild(emailError);
     isValid = false;
   }
-}
-  
+
+  if (phoneInput) {
+    const phoneValue = phoneInput.value.replace(/\D/g, '');
+
+    if (phoneValue.length !== 10) {
+      phoneInput.style.borderColor = '#c94a4a';
+
+      const phoneError = document.createElement('small');
+      phoneError.className = 'error-message';
+      phoneError.style.color = '#c94a4a';
+      phoneError.textContent = 'Phone number must contain exactly 10 digits.';
+
+      phoneInput.parentElement.appendChild(phoneError);
+      isValid = false;
+    }
+  }
+
   if (isValid) {
     const submitBtn  = reservationForm.querySelector('button[type="submit"]');
     const originalText = submitBtn.textContent;
@@ -354,13 +289,12 @@ if (phoneInput) {
       submitBtn.textContent = originalText;
       submitBtn.style.backgroundColor = '';
       submitBtn.disabled = false;
-      // Re-run time filter after form reset in case date was today
       updateAvailableTimes();
     }, 3000);
   }
 }
 
-// ── FIX #15 — Intersection Observer with prefers-reduced-motion ──────
+// ── Intersection Observer ──
 function setupIntersectionObserver() {
   const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -369,7 +303,6 @@ function setupIntersectionObserver() {
   );
 
   if (prefersReduced) {
-    // Skip animation entirely — just show everything immediately
     animatedElements.forEach((el) => {
       el.style.opacity = '1';
       el.style.transform = 'none';
@@ -397,13 +330,11 @@ function setupIntersectionObserver() {
   });
 }
 
-// Inject .visible class styles
 const style = document.createElement('style');
 style.textContent = `.visible { opacity: 1 !important; transform: translateY(0) !important; }`;
 document.head.appendChild(style);
 
-
-// ── Auto-scroll on hero "Scroll To Discover" click ───
+// ── Auto-scroll ───
 const heroScroll = document.querySelector('.hero-scroll');
 let autoScrollInterval = null;
 
@@ -438,7 +369,6 @@ if (heroScroll) {
 const backToTopBtn = document.getElementById('backToTop');
 
 if (backToTopBtn) {
-  // Two scroll listeners in original were duplicated — merged into one
   window.addEventListener('scroll', () => {
     const past = window.scrollY > 300;
     backToTopBtn.style.display = past ? 'block' : 'none';
@@ -446,7 +376,6 @@ if (backToTopBtn) {
   });
 
   backToTopBtn.addEventListener('click', () => {
-    // FIX #15 partial — respect reduced motion on back-to-top too
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     window.scrollTo({ top: 0, behavior: prefersReduced ? 'auto' : 'smooth' });
   });
@@ -458,7 +387,6 @@ navToggle.addEventListener('click', toggleMobileMenu);
 
 navLinks.forEach((link) => link.addEventListener('click', smoothScroll));
 
-// Menu tab listeners removed — menu uses filter buttons
 document.querySelectorAll('.nav-cta, .nav-cta-mobile, .hero-buttons a').forEach((link) => {
   link.addEventListener('click', smoothScroll);
 });
@@ -471,7 +399,7 @@ window.addEventListener('resize', () => {
   if (window.innerWidth > 768) closeMobileMenu();
 });
 
-// ── Reviews (localStorage) ──
+// ── Reviews ──
 const STORAGE_KEY = 'lighthouse_reviews';
 
 const pinnedReview = {
@@ -499,50 +427,6 @@ function renderReviews() {
   const userReviews = getReviews();
   const allReviews  = [pinnedReview, ...userReviews];
 
-  grid.innerHTML = "";
-
-  allReviews.forEach((r) => {
-    const card = document.createElement("div");
-    card.className = "review-card";
-
-    const stars = document.createElement("div");
-    stars.className = "review-stars";
-    stars.textContent =
-      "★".repeat(r.rating) + "☆".repeat(5 - r.rating);
-
-    const text = document.createElement("p");
-    text.className = "review-text";
-    text.textContent = r.text;
-
-    const author = document.createElement("div");
-    author.className = "review-author";
-
-    const avatar = document.createElement("div");
-    avatar.className = "review-avatar";
-    avatar.textContent = r.name.slice(0, 2).toUpperCase();
-
-    const info = document.createElement("div");
-
-    const name = document.createElement("span");
-    name.className = "review-name";
-    name.textContent = r.name;
-
-    const date = document.createElement("span");
-    date.className = "review-date";
-    date.textContent = r.date;
-
-    info.appendChild(name);
-    info.appendChild(date);
-
-    author.appendChild(avatar);
-    author.appendChild(info);
-
-    card.appendChild(stars);
-    card.appendChild(text);
-    card.appendChild(author);
-
-    grid.appendChild(card);
-  });
   grid.innerHTML = allReviews
     .map(
       (r) => `
@@ -561,7 +445,7 @@ function renderReviews() {
     .join('');
 }
 
-// Star rating widget
+// ── Star rating widget ───
 let selectedRating = 0;
 const starBtns = document.querySelectorAll('#star-input .star-btn');
 
@@ -580,7 +464,7 @@ starBtns.forEach((btn) => {
   });
 });
 
-// Review validation helpers
+// ── Review validation ───
 function isMeaningfulReview(text) {
   const words = text.trim().split(/\s+/);
   const randomPattern = /^(.)\1+$|^[a-zA-Z]{1,6}$/;
@@ -646,23 +530,14 @@ if (reviewForm) {
   });
 }
 
-// ── Initialise ───
-document.addEventListener('DOMContentLoaded', () => {
-  handleScroll();
-  setupIntersectionObserver();
-  updateAvailableTimes();
-  renderReviews();
-});
-
-// ── Veg / Non-Veg Filter ──────────────────────────────
-// 1. Your filtering function, contained properly
+// ── Veg / Non-Veg Filter ──
 (function () {
   const filterBtns = document.querySelectorAll('.diet-btn');
   if (!filterBtns.length) return;
 
   function applyDietFilter(diet) {
     const activePanels = document.querySelectorAll('.menu-panel.active');
-    
+
     activePanels.forEach(panel => {
       const items = panel.querySelectorAll('.menu-item');
       let visibleCount = 0;
@@ -701,7 +576,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 })();
 
-// ── Skeleton Loader Initialization ─────────────────────────────────────
+// ── Skeleton Loaders ───
 function createCardSkeleton() {
   const sk = document.createElement('div');
   sk.className = 'skeleton-card skeleton';
@@ -722,7 +597,6 @@ function createCardSkeleton() {
   right.appendChild(line1);
   right.appendChild(line2);
   right.appendChild(line3);
-
   sk.appendChild(left);
   sk.appendChild(right);
 
@@ -734,7 +608,6 @@ function attachSkeletonToCard(card) {
   const wrapper = document.createElement('div');
   wrapper.className = 'skeleton-wrapper';
 
-  // Move existing children into wrapper
   while (card.firstChild) {
     wrapper.appendChild(card.firstChild);
   }
@@ -744,24 +617,19 @@ function attachSkeletonToCard(card) {
   const skeleton = createCardSkeleton();
   wrapper.appendChild(skeleton);
 
-  // Hide native images inside the card while loading
   const imgs = wrapper.querySelectorAll('img');
   imgs.forEach((img) => {
     img.classList.add('image-hidden');
-    // lazy-load optimization: set loading attribute where supported
     try { if (!img.hasAttribute('loading')) img.setAttribute('loading', 'lazy'); } catch (e) {}
 
     if (img.complete && img.naturalWidth > 0) {
-      // Already loaded from cache - reveal immediately
       img.classList.add('image-loaded');
       img.classList.remove('image-hidden');
       skeleton.remove();
     } else {
-      // Wait for load or error
       img.addEventListener('load', function onLoad() {
         img.classList.add('image-loaded');
         img.classList.remove('image-hidden');
-        // fade out skeleton then remove
         skeleton.style.transition = 'opacity 0.45s ease';
         skeleton.style.opacity = '0';
         setTimeout(() => skeleton.remove(), 500);
@@ -769,7 +637,6 @@ function attachSkeletonToCard(card) {
       });
 
       img.addEventListener('error', function onError() {
-        // remove skeleton even if image fails to avoid permanent overlays
         skeleton.style.transition = 'opacity 0.25s ease';
         skeleton.style.opacity = '0';
         setTimeout(() => skeleton.remove(), 300);
@@ -783,7 +650,6 @@ function attachSkeletonToCard(card) {
 }
 
 function attachSkeletonToSimpleImage(container, minHeight = 180) {
-  // container is element that contains a single img as background or child
   const img = container.querySelector('img');
   if (!img) return;
   if (container.__skeletonAttached) return;
@@ -797,12 +663,10 @@ function attachSkeletonToSimpleImage(container, minHeight = 180) {
   sk.style.inset = '0';
   sk.style.zIndex = '2';
 
-  // ensure container is positioned to allow absolute overlay
   const prevPos = getComputedStyle(container).position;
   if (prevPos === 'static') container.style.position = 'relative';
 
   container.appendChild(sk);
-
   img.classList.add('image-hidden');
 
   if (img.complete && img.naturalWidth > 0) {
@@ -831,7 +695,6 @@ function attachSkeletonToSimpleImage(container, minHeight = 180) {
   container.__skeletonAttached = true;
 }
 
-// Text skeletons
 function createTextSkeleton(lines = 3) {
   const wrapper = document.createElement('div');
   wrapper.className = 'skeleton skeleton-overlay skeleton-fade';
@@ -843,7 +706,6 @@ function createTextSkeleton(lines = 3) {
   for (let i = 0; i < lines; i++) {
     const line = document.createElement('div');
     line.className = 'skeleton-line';
-    // vary width for realism
     if (i === 0) line.classList.add('long');
     else if (i === lines - 1) line.classList.add('short');
     else line.classList.add('medium');
@@ -857,14 +719,10 @@ function createTextSkeleton(lines = 3) {
 function attachSkeletonToTextBlock(el, lines = 3) {
   if (!el || el.__skeletonAttached) return;
 
-  // ensure wrapper for absolute overlay
   el.classList.add('skeleton-wrapper');
   const sk = createTextSkeleton(lines);
-
-  // hide content until revealed
   el.classList.add('content-hidden');
 
-  // insert skeleton overlay
   sk.style.position = 'absolute';
   sk.style.top = 0;
   sk.style.left = 0;
@@ -873,14 +731,10 @@ function attachSkeletonToTextBlock(el, lines = 3) {
   sk.style.zIndex = 2;
   el.appendChild(sk);
 
-  // Reveal content after microtask or when images inside have loaded
-  // For static text, unhide quickly to avoid long overlays
   requestAnimationFrame(() => {
-    // small delay to allow shimmer to show slightly
     setTimeout(() => {
       el.classList.remove('content-hidden');
       el.classList.add('content-visible');
-      // fade out skeleton
       sk.style.opacity = '0';
       setTimeout(() => sk.remove(), 500);
     }, 300);
@@ -889,13 +743,10 @@ function attachSkeletonToTextBlock(el, lines = 3) {
   el.__skeletonAttached = true;
 }
 
-// Updated init to attach text skeletons
 function initSkeletonLoaders() {
-  // Menu card skeletons
   const cards = document.querySelectorAll('.food-card');
   cards.forEach((card) => attachSkeletonToCard(card));
 
-  // Large section images: hero, about image, reservation bg
   const largeContainers = [
     document.querySelector('.hero-bg'),
     document.querySelector('.about-image'),
@@ -906,14 +757,23 @@ function initSkeletonLoaders() {
     if (c) attachSkeletonToSimpleImage(c, 360);
   });
 
-  // Text blocks (about, reservation info, first paragraph areas)
   const textTargets = document.querySelectorAll('.about-content, .reservation-info, .review-form-heading');
   textTargets.forEach((t) => attachSkeletonToTextBlock(t, 3));
 }
 
-// Initialize skeletons once DOM is ready
+// ── Category Count ──
+function updateCategoryCount() {
+  const buttons = document.querySelectorAll('.filter-btn:not([data-filter="all"])');
+  const countEl = document.getElementById("category-count");
+  if (countEl) countEl.textContent = buttons.length;
+}
+
+// ── Initialise ───
 document.addEventListener('DOMContentLoaded', () => {
-  // existing DOMContentLoaded handlers already call init functions earlier,
-  // but ensure skeletons are attached after render
+  handleScroll();
+  setupIntersectionObserver();
+  updateAvailableTimes();
+  renderReviews();
   initSkeletonLoaders();
-})}
+  updateCategoryCount();
+});
