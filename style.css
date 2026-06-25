@@ -1209,9 +1209,49 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 }
 
 .review-stars {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: 1.2rem;
   color: var(--color-primary);
   letter-spacing: 2px;
+}
+
+.review-rating-value {
+  font-size: 0.85rem;
+  letter-spacing: 0;
+  color: var(--color-text-muted);
+  margin-left: 4px;
+}
+
+.review-star {
+  position: relative;
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  color: var(--color-border);
+  flex: 0 0 auto;
+}
+
+.review-star::before {
+  content: '★';
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 1rem;
+  line-height: 1;
+  color: currentColor;
+}
+
+.review-star.is-full {
+  color: var(--color-primary);
+}
+
+.review-star.is-half::before {
+  color: var(--color-primary);
+  width: 50%;
+  overflow: hidden;
 }
 
 .review-text {
@@ -1291,16 +1331,78 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
   line-height: 1;
 }
 
-.star-btn.active,
-.star-btn:hover {
+.rate {
+  display: inline-flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 0;
+  width: max-content;
+  border: 0;
+  padding: 6px 0;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.rate > input {
+  display: none;
+}
+
+.rate > label {
+  position: relative;
+  width: 2rem;
+  height: 2rem;
+  margin: 0;
+  cursor: pointer;
+  flex: 0 0 auto;
+}
+
+.rate > label::before {
+  display: block;
+  content: '★';
+  position: absolute;
+  inset: 0;
+  font-size: 1.9rem;
+  line-height: 1;
+  color: var(--color-border);
+  transition:
+    color var(--transition),
+    transform var(--transition);
+}
+
+/* Half labels sit in the LEFT half of each star cell */
+.rate > label.half {
+  width: 1rem;
+  margin-right: -1rem; /* overlap so full label sits on top visually */
+  z-index: 1;
+}
+
+.rate > label.half::before {
+  width: 1rem;
+  overflow: hidden;
+}
+
+.rate > input:checked ~ label::before,
+.rate > label:hover::before,
+.rate > label:hover ~ label::before {
   color: var(--color-primary);
-  transform: scale(1.1);
 }
+
+.rate > input:focus-visible + label {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 6px;
+  border-radius: 4px;
 }
-@media (max-width: 1024px) {
-  .reviews-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
+
+.rate > label:hover::before,
+.rate > label:hover ~ label::before {
+  transform: scale(1.12);
+}
+
+.rating-help {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
 }
 
 @media (max-width: 768px) {
@@ -1309,6 +1411,17 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
   }
   .review-form-wrapper {
     padding: 24px 20px;
+  }
+  .rate > label {
+    width: 1.6rem;
+    height: 1.6rem;
+  }
+  .rate > label.half {
+    width: 0.8rem;
+    margin-right: -0.8rem;
+  }
+  .rate > label::before {
+    font-size: 1.55rem;
   }
 }
 

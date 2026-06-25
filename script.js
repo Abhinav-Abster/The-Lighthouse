@@ -51,127 +51,17 @@ function updateAvailableTimes() {
     if (!option.value) return;
 
     const [optHours, optMins] = option.value.split(':').map(Number);
+    const isPastToday =
+      selectedDate === todayStr &&
+      (optHours < currentHours || (optHours === currentHours && optMins <= currentMins));
 
-    if (selectedDate === todayStr) {
-      const isPast =
-        optHours < currentHours ||
-        (optHours === currentHours && optMins <= currentMins + 30);
-
-      option.disabled = isPast;
-      if (isPast && option.selected) {
-        timeSelect.value = '';
-      }
-    } else {
-      option.disabled = false;
-    }
+    option.disabled = isPastToday;
   });
-}
 
-
-
-// ── Navigation scroll effect ──
-function handleScroll() {
-  const currentScroll = window.scrollY;
-
-  // Sticky nav background
-  nav.classList.toggle('scrolled', currentScroll > 50);
-
-  // Parallax skipped on touch devices
-  if (!isTouchDevice) {
-    if (heroBg) {
-      heroBg.style.transform = `translateY(${currentScroll * 0.5}px)`;
-    }
-    if (reservationBg && currentScroll > window.innerHeight) {
-      const sectionTop = document.getElementById('reservation').offsetTop;
-      const offset = (currentScroll - sectionTop) * 0.3;
-      reservationBg.style.transform = `translateY(${offset}px)`;
-    }
+  if (timeSelect.value && timeSelect.selectedOptions[0]?.disabled) {
+    timeSelect.value = '';
   }
-
-  updateActiveNavLink();
 }
-
-// ── Active nav link on scroll ───
-function updateActiveNavLink() {
-  const sections = document.querySelectorAll('section[id]');
-  const scrollPosition = window.scrollY + 150;
-
-  sections.forEach((section) => {
-    const sectionTop = section.offsetTop;
-    const sectionHeight = section.offsetHeight;
-    const sectionId = section.getAttribute('id');
-
-    if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
-      navLinks.forEach((link) => {
-        link.classList.remove('active');
-        if (link.getAttribute('data-section') === sectionId) {
-          link.classList.add('active');
-        }
-      });
-    }
-  });
-}
-
-// ── Mobile menu ───
-function toggleMobileMenu() {
-  navToggle.classList.toggle('active');
-  navMenu.classList.toggle('active');
-  document.body.style.overflow = navMenu.classList.contains('active') ? 'hidden' : '';
-}
-
-function closeMobileMenu() {
-  navToggle.classList.remove('active');
-  navMenu.classList.remove('active');
-  document.body.style.overflow = '';
-}
-
-// Menu tabs functionality
-function switchMenuTab(e) {
-  const targetTab = e.target.dataset.tab;
-
-  // Update tab buttons
-  menuTabs.forEach((tab) => {
-    tab.classList.remove("active");
-  });
-  e.target.classList.add("active");
-
-  // Update panels
-  menuPanels.forEach((panel) => {
-    panel.classList.remove("active");
-    if (panel.id === targetTab) {
-      panel.classList.add("active");
-    }
-  });
-}
-
-//
-// Theme Toggle
-const savedTheme = localStorage.getItem("theme");
-
-if (savedTheme === "light") {
-  document.body.classList.add("light-theme");
-  themeToggle.textContent = "☀️";
-} else {
-  themeToggle.textContent = "🌙";
-}
-
-themeToggle.addEventListener("click", () => {
-  document.body.classList.toggle("light-theme");
-
-  const isLight = document.body.classList.contains("light-theme");
-
-  if (isLight) {
-    localStorage.setItem("theme", "light");
-    themeToggle.textContent = "☀️";
-  } else {
-    localStorage.setItem("theme", "dark");
-    themeToggle.textContent = "🌙";
-  }
-});
-
-// ── Menu Search and Filter ─────────────────────────
-
-
 
 function filterMenuItems(timeFilter, cuisineFilter, searchText) {
   const menuItems = document.querySelectorAll(".menu-item");
@@ -254,7 +144,6 @@ function smoothScroll(e) {
     });
   }
   closeMobileMenu();
-}
 }
 // ── Reservation form submission ──
 function handleFormSubmit(e) {
@@ -448,6 +337,32 @@ function saveReviews(reviews) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(reviews));
 }
 
+function normalizeRating(value) {
+  const rating = Number(value);
+  if (!Number.isFinite(rating)) return 0;
+  return Math.min(5, Math.max(0, Math.round(rating * 2) / 2));
+}
+
+function formatRating(rating) {
+  return Number.isInteger(rating) ? String(rating) : rating.toFixed(1);
+}
+
+function renderRatingStars(rating) {
+  const normalizedRating = normalizeRating(rating);
+
+  return Array.from({ length: 5 }, (_, index) => {
+    const starValue = index + 1;
+    const isFull = normalizedRating >= starValue;
+    const isHalf = !isFull && normalizedRating >= starValue - 0.5;
+    const classes = ['review-star'];
+
+    if (isFull) classes.push('is-full');
+    if (isHalf) classes.push('is-half');
+
+    return `<span class="${classes.join(' ')}" aria-hidden="true"></span>`;
+  }).join('');
+}
+
 function renderReviews() {
   const grid = document.getElementById('reviews-grid');
   if (!grid) return;
@@ -459,7 +374,7 @@ function renderReviews() {
     .map(
       (r) => `
       <div class="review-card">
-        <div class="review-stars">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</div>
+        <div class="review-stars">${renderRatingStars(r.rating)} <span class="review-rating-value">${formatRating(normalizeRating(r.rating))}/5</span></div>
         <p class="review-text">${r.text}</p>
         <div class="review-author">
           <div class="review-avatar">${r.name.slice(0, 2).toUpperCase()}</div>
@@ -475,22 +390,42 @@ function renderReviews() {
 
 // Star rating widget
 let selectedRating = 0;
-const starBtns = document.querySelectorAll('#star-input .star-btn');
+const ratingGroup = document.getElementById('review-rating-group');
+const ratingPreview = document.getElementById('rating-preview');
 
-starBtns.forEach((btn) => {
-  btn.addEventListener('mouseenter', () => {
-    const val = +btn.dataset.value;
-    starBtns.forEach((s) => s.classList.toggle('active', +s.dataset.value <= val));
+function setRatingPreview(rating, isPreview = false) {
+  const normalizedRating = normalizeRating(rating);
+  if (!ratingPreview) return;
+
+  ratingPreview.textContent = normalizedRating
+    ? `${isPreview ? 'Preview' : 'Selected'} rating: ${formatRating(normalizedRating)}/5`
+    : 'Hover over the stars to rate. Click to select.';
+}
+
+function syncSelectedRating() {
+  const checked = document.querySelector('input[name="rating"]:checked');
+  selectedRating = checked ? normalizeRating(Number(checked.value) / 2) : 0;
+  setRatingPreview(selectedRating);
+}
+
+if (ratingGroup) {
+  const ratingLabels = ratingGroup.querySelectorAll('label[for]');
+
+  ratingLabels.forEach((label) => {
+    const input = document.getElementById(label.htmlFor);
+    if (!input) return;
+
+    const ratingValue = normalizeRating(Number(input.value) / 2);
+
+    label.addEventListener('mouseenter', () => setRatingPreview(ratingValue, true));
+    label.addEventListener('mousemove', () => setRatingPreview(ratingValue, true));
+    label.addEventListener('mouseleave', syncSelectedRating);
+    input.addEventListener('change', syncSelectedRating);
   });
-  btn.addEventListener('mouseleave', () => {
-    starBtns.forEach((s) => s.classList.toggle('active', +s.dataset.value <= selectedRating));
-  });
-  btn.addEventListener('click', () => {
-    selectedRating = +btn.dataset.value;
-    document.getElementById('review-rating').value = selectedRating;
-    starBtns.forEach((s) => s.classList.toggle('active', +s.dataset.value <= selectedRating));
-  });
-});
+
+  ratingGroup.addEventListener('mouseleave', syncSelectedRating);
+  syncSelectedRating();
+}
 
 // Review validation helpers
 function isMeaningfulReview(text) {
@@ -557,8 +492,12 @@ if (reviewForm) {
 
     reviewForm.reset();
     selectedRating = 0;
-    document.getElementById('review-rating').value = 0;
-    starBtns.forEach((s) => s.classList.remove('active'));
+    if (ratingGroup) {
+      ratingGroup.querySelectorAll('input[name="rating"]').forEach((input) => {
+        input.checked = false;
+      });
+    }
+    setRatingPreview(0);
 
     reviewMsg.textContent = 'Review submitted successfully!';
     reviewMsg.style.color = '#4a9c6a';
